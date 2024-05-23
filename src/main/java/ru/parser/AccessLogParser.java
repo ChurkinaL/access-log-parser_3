@@ -10,9 +10,9 @@ public class AccessLogParser {
     private static final int MAX_LINE_LENGTH = 1024;
 
     public void readFile() {
-        int lineCount = 0;
-        int maxLength = 0;
-        int minLength = Integer.MAX_VALUE;
+        int totalLines = 0;
+        int googleBotCount = 0;
+        int yandexBotCount = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
@@ -24,35 +24,44 @@ public class AccessLogParser {
                     throw new LineTooLongException("Длина строки превышает " + MAX_LINE_LENGTH + " фактически: " + length);
                 }
 
-                lineCount++;
-                if (length > maxLength) {
-                    maxLength = length;
-                }
-                if (length < minLength) {
-                    minLength = length;
+                totalLines++;
+                String userAgent = extractUserAgent(line);
+
+                if (userAgent != null) {
+                    String[] parts = userAgent.split(";");
+                    if (parts.length >= 2) {
+                        String fragment = parts[1].trim();
+                        String botName = fragment.split("/")[0].trim();
+
+                        if (botName.equals("Googlebot")) {
+                            googleBotCount++;
+                        } else if (botName.equals("YandexBot")) {
+                            yandexBotCount++;
+                        }
+                    }
                 }
             }
 
-            // Обработка случая, когда файл может быть пустым
-            if (lineCount == 0) {
-                minLength = 0;
-            }
+            double googleBotPercentage = (googleBotCount * 100.0) / totalLines;
+            double yandexBotPercentage = (yandexBotCount * 100.0) / totalLines;
 
-            System.out.println("Общее количество строк: " + lineCount);
-            System.out.println("Длина самой длинной линии: " + maxLength);
-            System.out.println("Длина самой короткой линии: " + minLength);
+            System.out.printf("Googlebot запросы: %.2f%%\n", googleBotPercentage);
+            System.out.printf("YandexBot запросы: %.2f%%\n", yandexBotPercentage);
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private String extractUserAgent(String line) {
+        int startIndex = line.indexOf("(");
+        int endIndex = line.indexOf(")");
 
-
-
-
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            return line.substring(startIndex + 1, endIndex);
+        }
+        return null;
+    }
     /**
      * Отладка
      */
