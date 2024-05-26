@@ -25,7 +25,6 @@ public class AccessLogParser {
                 }
 
                 totalLines++;
-                //LogEntry logEntry = new LogEntry(line);
                 LogEntry logEntry = new LogEntry(line);
                 stats.addEntry(logEntry);
 
@@ -60,5 +59,6 @@ public class AccessLogParser {
         accessLogParser.readFile();
     }
 }
+
 
 

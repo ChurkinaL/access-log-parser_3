@@ -47,7 +47,7 @@ public class LogEntry {
         this.dateTime = zonedDateTime.toLocalDateTime();
 
         // HTTP Method
-        this.httpMethod = LogEntry.HttpMethod.valueOf(matcher.group(3));
+        this.httpMethod = HttpMethod.valueOf(matcher.group(3));
 
         // Request Path
         this.requestPath = matcher.group(4);
@@ -75,7 +75,7 @@ public class LogEntry {
         return dateTime;
     }
 
-    public HttpMethod getHttpMethod() {
+    public  HttpMethod getHttpMethod() {
         return httpMethod;
     }
 
@@ -103,6 +103,7 @@ public class LogEntry {
         GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH, TRACE
     }
 }
+
 
 
 
