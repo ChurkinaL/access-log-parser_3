@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 public class AccessLogParser {
-           private static final String FILE_PATH = "src/main/resources/files/access.log";
+    private static final String FILE_PATH = "src/main/resources/files/access.log";
     private static final int MAX_LINE_LENGTH = 1024;
 
     public void readFile() {
@@ -25,8 +25,8 @@ public class AccessLogParser {
                 }
 
                 totalLines++;
+                //LogEntry logEntry = new LogEntry(line);
                 LogEntry logEntry = new LogEntry(line);
-                //System.out.println(logEntry.getUserAgent().getBrowser());
                 stats.addEntry(logEntry);
 
                 String userAgentStr = logEntry.getUserAgent().getBrowser();
@@ -40,21 +40,24 @@ public class AccessLogParser {
             double googleBotPercentage = (googleBotCount * 100.0) / totalLines;
             double yandexBotPercentage = (yandexBotCount * 100.0) / totalLines;
 
-            System.out.printf("Googlebot запросы: %.2f%%\n", googleBotPercentage);
-            System.out.printf("YandexBot запросы: %.2f%%\n", yandexBotPercentage);
-            System.out.printf("Средний объем трафика за час: %.2f байт\n", stats.getTrafficRate());
+            System.out.printf("1) Googlebot запросы: %.2f%%\n", googleBotPercentage);
+            System.out.printf("2) YandexBot запросы: %.2f%%\n", yandexBotPercentage);
+            System.out.printf("3) Средний объем трафика за час: %.2f байт\n", stats.getTrafficRate());
+
+            stats.printStatistics();
+
 
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
-  
-/**
+
+    /**
      * Отладка
      */
-  
     public static void main(String[] args) {
         AccessLogParser accessLogParser = new AccessLogParser();
         accessLogParser.readFile();
     }
 }
+
