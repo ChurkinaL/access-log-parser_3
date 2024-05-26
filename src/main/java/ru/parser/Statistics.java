@@ -10,7 +10,9 @@ public class Statistics {
     private LocalDateTime maxTime;
     private List<LogEntry> logEntries;
     private Set<String> existingPages;
+    private Set<String> nonExistingPages;
     private Map<String, Integer> osFrequency;
+    private Map<String, Integer> browserFrequency;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -18,7 +20,9 @@ public class Statistics {
         this.maxTime = null;
         this.logEntries = new ArrayList<>();
         this.existingPages = new HashSet<>();
+        this.nonExistingPages = new HashSet<>();
         this.osFrequency = new HashMap<>();
+        this.browserFrequency = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -34,10 +38,15 @@ public class Statistics {
 
         if (entry.getResponseCode() == 200) {
             existingPages.add(entry.getRequestPath());
+        } else if (entry.getResponseCode() == 404) {
+            nonExistingPages.add(entry.getRequestPath());
         }
 
         String os = entry.getUserAgent().getOperatingSystem();
         osFrequency.put(os, osFrequency.getOrDefault(os, 0) + 1);
+
+        String browser = entry.getUserAgent().getBrowser();
+        browserFrequency.put(browser, browserFrequency.getOrDefault(browser, 0) + 1);
 
         logEntries.add(entry);
     }
@@ -73,6 +82,10 @@ public class Statistics {
         return existingPages;
     }
 
+    public Set<String> getNonExistingPages() {
+        return nonExistingPages;
+    }
+
     public Map<String, Double> getOsStatistics() {
         Map<String, Double> osStatistics = new HashMap<>();
         int totalEntries = logEntries.size();
@@ -82,6 +95,17 @@ public class Statistics {
         }
 
         return osStatistics;
+    }
+
+    public Map<String, Double> getBrowserStatistics() {
+        Map<String, Double> browserStatistics = new HashMap<>();
+        int totalEntries = logEntries.size();
+
+        for (Map.Entry<String, Integer> entry : browserFrequency.entrySet()) {
+            browserStatistics.put(entry.getKey(), (double) entry.getValue() / totalEntries);
+        }
+
+        return browserStatistics;
     }
 
     public double calculateAverageTrafficPerHour() {
@@ -100,9 +124,19 @@ public class Statistics {
     public void printStatistics() {
         System.out.println("4) Список существующих страниц: " + existingPages.size());
 
-        System.out.println("5) Статистика операционных систем:");
+        System.out.println("5) Список несуществующих страниц: " + nonExistingPages.size());
+//        for (String page : nonExistingPages) {
+//            System.out.println(page);
+//        }
+        System.out.println("6) Статистика операционных систем:");
         Map<String, Double> osStatistics = getOsStatistics();
         for (Map.Entry<String, Double> entry : osStatistics.entrySet()) {
+            System.out.printf("%s: %.2f%%%n", entry.getKey(), entry.getValue() * 100);
+        }
+
+        System.out.println("7) Статистика браузеров:");
+        Map<String, Double> browserStatistics = getBrowserStatistics();
+        for (Map.Entry<String, Double> entry : browserStatistics.entrySet()) {
             System.out.printf("%s: %.2f%%%n", entry.getKey(), entry.getValue() * 100);
         }
     }

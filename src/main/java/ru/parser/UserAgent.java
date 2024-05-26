@@ -12,9 +12,9 @@ public class UserAgent {
         } else if (userAgentStr.toLowerCase().contains("linux")) {
             this.operatingSystem = "Linux";
         } else if (userAgentStr.toLowerCase().contains("android")) {
-            this.operatingSystem =  "Android";
+            this.operatingSystem = "Android";
         } else if (userAgentStr.toLowerCase().contains("iphone") || userAgentStr.toLowerCase().contains("ipad")) {
-            this.operatingSystem =  "iOS";
+            this.operatingSystem = "iOS";
         } else {
             this.operatingSystem = "Other";
         }
@@ -48,6 +48,7 @@ public class UserAgent {
         return browser;
     }
 }
+
 
 
 
