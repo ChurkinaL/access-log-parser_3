@@ -75,7 +75,7 @@ public class LogEntry {
         return dateTime;
     }
 
-    public HttpMethod getHttpMethod() {
+    public  HttpMethod getHttpMethod() {
         return httpMethod;
     }
 

@@ -1,9 +1,12 @@
 package ru.parser;
 
+import lombok.Getter;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Getter
 public class Statistics {
     private long totalTraffic;
     private LocalDateTime minTime;
@@ -17,6 +20,9 @@ public class Statistics {
     private int errorResponses;
     private Set<String> uniqueUserIPs;
     private int realUserVisits;
+    private Map<LocalDateTime, Integer> visitsPerSecond;
+    private Set<String> referringDomains;
+    private Map<String, Integer> userVisitCounts;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -31,6 +37,9 @@ public class Statistics {
         this.errorResponses = 0;
         this.uniqueUserIPs = new HashSet<>();
         this.realUserVisits = 0;
+        this.visitsPerSecond = new HashMap<>();
+        this.referringDomains = new HashSet<>();
+        this.userVisitCounts = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -64,7 +73,22 @@ public class Statistics {
         if (!entry.getUserAgent().getBrowser().toLowerCase().contains("bot")) {
             uniqueUserIPs.add(entry.getIpAddress());
             realUserVisits++;
+
+            LocalDateTime visitTime = entry.getDateTime().withNano(0);
+            visitsPerSecond.put(visitTime, visitsPerSecond.getOrDefault(visitTime, 0) + 1);
+
+            String referer = entry.getReferer();
+            if (referer != null && !referer.isEmpty()) {
+                String domain = getDomainFromReferer(referer);
+                if (domain != null) {
+                    referringDomains.add(domain);
+                }
+            }
+
+            String ipAddress = entry.getIpAddress();
+            userVisitCounts.put(ipAddress, userVisitCounts.getOrDefault(ipAddress, 0) + 1);
         }
+
 
         logEntries.add(entry);
     }
@@ -80,30 +104,6 @@ public class Statistics {
         return hours > 0 ? (double) totalTraffic / hours : (double) totalTraffic * 60 / minutes;
     }
 
-    public long getTotalTraffic() {
-        return totalTraffic;
-    }
-
-    public LocalDateTime getMinTime() {
-        return minTime;
-    }
-
-    public LocalDateTime getMaxTime() {
-        return maxTime;
-    }
-
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
-    }
-
-    public Set<String> getExistingPages() {
-        return existingPages;
-    }
-
-    public Set<String> getNonExistingPages() {
-        return nonExistingPages;
-    }
-
     public Map<String, Double> getOsStatistics() {
         Map<String, Double> osStatistics = new HashMap<>();
         int totalEntries = logEntries.size();
@@ -113,6 +113,22 @@ public class Statistics {
         }
 
         return osStatistics;
+    }
+
+    private String getDomainFromReferer(String referer) {
+        try {
+            String[] parts = referer.split("/");
+            if (parts.length > 2) {
+                String domain = parts[2];
+                if (domain.startsWith("www.")) {
+                    domain = domain.substring(4);
+                }
+                return domain;
+            }
+        } catch (Exception e) {
+            // Обработка исключения при необходимости
+        }
+        return null;
     }
 
     public Map<String, Double> getBrowserStatistics() {
@@ -126,6 +142,14 @@ public class Statistics {
         return browserStatistics;
     }
 
+    public int getPeakVisitsPerSecond() {
+        return visitsPerSecond.values().stream().max(Integer::compare).orElse(0);
+    }
+
+    public int getMaxVisitsPerUser() {
+        return userVisitCounts.values().stream().max(Integer::compare).orElse(0);
+    }
+
     public double calculateAverageTrafficPerHour() {
         if (totalTraffic <= 0 || minTime == null || maxTime == null) {
             return 0;
@@ -135,7 +159,6 @@ public class Statistics {
         if (durationInHours <= 0) {
             return 0;
         }
-
 
         return (double) totalTraffic / durationInHours;
     }
@@ -196,13 +219,24 @@ public class Statistics {
         double averageVisitsPerHour = calculateAverageVisitsPerHour();
         double averageErrorsPerHour = calculateAverageErrorsPerHour();
         double averageVisitsPerUser = calculateAverageVisitsPerUser();
+        int peakVisitsPerSecond = getPeakVisitsPerSecond();
+        int maxVisitsPerUser = getMaxVisitsPerUser();
 
         System.out.printf("8) Средний объем трафика за час: %.2f байт%n", averageTrafficPerHour);
         System.out.printf("9) Среднее количество посещений за час: %.2f%n", averageVisitsPerHour);
         System.out.printf("10) Среднее количество ошибочных запросов за час: %.2f%n", averageErrorsPerHour);
         System.out.printf("11) Средняя посещаемость одним пользователем: %.2f%n", averageVisitsPerUser);
+        System.out.printf("12) Пиковая посещаемость (в секунду): %d%n", peakVisitsPerSecond);
+        System.out.printf("13) Максимальная посещаемость одним пользователем: %d%n", maxVisitsPerUser);
+
+
+        System.out.println("14) Ссылочные домены: " + referringDomains.size());
+        for (String domain : referringDomains) {
+            System.out.print(String.format("[%s]; ", domain));
+        }
     }
 }
 
+    
 
 
