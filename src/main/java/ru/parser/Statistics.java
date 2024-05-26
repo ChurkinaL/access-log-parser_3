@@ -115,7 +115,6 @@ public class Statistics {
         return osStatistics;
     }
 
-
     private String getDomainFromReferer(String referer) {
         try {
             String[] parts = referer.split("/");
@@ -223,7 +222,6 @@ public class Statistics {
         int peakVisitsPerSecond = getPeakVisitsPerSecond();
         int maxVisitsPerUser = getMaxVisitsPerUser();
 
-
         System.out.printf("8) Средний объем трафика за час: %.2f байт%n", averageTrafficPerHour);
         System.out.printf("9) Среднее количество посещений за час: %.2f%n", averageVisitsPerHour);
         System.out.printf("10) Среднее количество ошибочных запросов за час: %.2f%n", averageErrorsPerHour);
@@ -239,5 +237,6 @@ public class Statistics {
     }
 }
 
+    
 
 
